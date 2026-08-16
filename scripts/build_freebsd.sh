@@ -3,29 +3,38 @@
 
 set -e
 
-FREEBSD_REPO="https://git.freebsd.org/src.git"
-FREEBSD_BRANCH="releng/14.0"
-BUILD_DIR="/tmp/freebsd-build"
+# Use current directory instead of hardcoded paths
+WORKDIR=$(pwd)
+OUTPUT_DIR="$WORKDIR/output"
+KERNEL_CONF="$WORKDIR/kernel/conf/NKS"
 
 echo "🐾 Building FreeBSD kernel for NKS..."
+echo "Workdir: $WORKDIR"
 
-# Clean old build
+# Check if we're on FreeBSD
+if [ "$(uname)" != "FreeBSD" ]; then
+    echo "⚠️  Not on FreeBSD. Skipping kernel build (GitHub Actions)."
+    mkdir -p $OUTPUT_DIR
+    touch $OUTPUT_DIR/kernel.dummy
+    echo "✅ FreeBSD kernel build skipped (placeholder created)."
+    exit 0
+fi
+
+# FreeBSD build code here (if we're actually on FreeBSD)
+BUILD_DIR="/tmp/freebsd-build"
 rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 
-# Clone FreeBSD source
-git clone --depth 1 --branch $FREEBSD_BRANCH $FREEBSD_REPO src
+git clone --depth 1 --branch releng/14.0 https://git.freebsd.org/src.git src
 
 # Copy our kernel config
-cp /root/NKS/kernel/conf/NKS src/sys/amd64/conf/
+cp $KERNEL_CONF src/sys/amd64/conf/
 
-# Build kernel
 cd src
 make -j$(sysctl -n hw.ncpu) buildkernel KERNCONF=NKS
 
-# Install kernel to output
-mkdir -p /root/NKS/output/boot/kernel
-make installkernel KERNCONF=NKS DESTDIR=/root/NKS/output
+mkdir -p $OUTPUT_DIR/boot/kernel
+make installkernel KERNCONF=NKS DESTDIR=$OUTPUT_DIR
 
 echo "✅ FreeBSD kernel built successfully!"
