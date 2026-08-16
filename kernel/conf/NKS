@@ -1,88 +1,87 @@
-# NKS Kernel Configuration
-# FreeBSD 14.x - Stripped for NyaaKitStation
+#
+# NKS -- NyaaKitStation custom kernel
+#
+# $FreeBSD$
+#
 
-include GENERIC
-ident NKS
+machine		amd64
+cpu		HAMMER
+ident		NKS
 
-# ---- CPU ----
-cpu HAMMER
+# Bus support
+device		acpi
+device		pci
+device		isa
 
-# ---- Platform ----
-machine amd64
+# Console & Framebuffer
+device		vt
+device		fb
+options		VESA
+options		SC_PIXEL_MODE
 
-# ---- Bus ----
-device      acpi
-device      pci
-device      isa
+# USB (keyboard & storage)
+device		usb
+device		xhci
+device		ehci
+device		ohci
+device		uhci
+device		uhid
+device		ukbd
+device		umass
 
-# ---- Console & Framebuffer ----
-device      vt
-device      fb
-options     VESA
-options     SC_PIXEL_MODE
+# Storage
+device		ahci
+device		ata
+device		da
+device		cd
 
-# ---- USB (for keyboard & storage) ----
-device      usb
-device      xhci
-device      ehci
-device      ohci
-device      uhci
-device      uhid
-device      ukbd
-device      umass
+# Audio
+device		sound
+device		snd_hda
+device		snd_ich
 
-# ---- Storage (to boot) ----
-device      ahci
-device      ata
-device      da
-device      cd
+# NO NETWORKING
+nooptions	INET
+nooptions	INET6
+nooptions	SCTP
+nooptions	IPSEC
+nooptions	TCP_OFFLOAD
+nodevice	ether
+nodevice	re
+nodevice	em
+nodevice	ix
+nodevice	igb
+nodevice	igc
+nodevice	wlan
+nodevice	wpi
+nodevice	iwn
+nodevice	ral
+nodevice	ath
+nodevice	ath_hal
+nodevice	ath_pci
 
-# ---- Audio ----
-device      sound
-device      snd_hda
-device      snd_ich
+# Filesystems
+options		UFS_ACL
+options		UFS_DIRHASH
+options		UFS_GJOURNAL
+options		MSDOSFS
+options		CD9660
+options		PROCFS
+options		PSEUDOFS
 
-# ---- Networking ----
-# Disable ALL networking (Ethernet, WiFi, etc.)
-nooptions   INET6
-nooptions   SCTP
-nooptions   IPSEC
-nodevice    ether
-nodevice    re
-nodevice    em
-nodevice    ix
-nodevice    igb
-nodevice    wlan
-nodevice    wpi
-nodevice    iwn
-nodevice    ral
-nodevice    ath
-nodevice    ath_hal
-nodevice    ath_pci
+# Misc
+nooptions	USB_DEBUG
 
-# ---- Filesystems ----
-options     UFS_ACL
-options     UFS_DIRHASH
-options     UFS_GJOURNAL
-options     MSDOSFS
-options     CD9660
-options     PROCFS
-options     PSEUDOFS
+# Debugging (remove for smaller kernel)
+nooptions	INVARIANTS
+nooptions	INVARIANT_SUPPORT
+nooptions	WITNESS
+nooptions	WITNESS_SKIPSPIN
+nooptions	DEBUG
+nooptions	KDB
+nooptions	DDB
+nooptions	GDB
+nooptions	ALT_BREAK_TO_DEBUGGER
 
-# ---- Misc (remove bloat) ----
-nooptions   TCP_OFFLOAD
-nooptions   USB_DEBUG
-
-# ---- Debugging (remove) ----
-nooptions   INVARIANTS
-nooptions   INVARIANT_SUPPORT
-nooptions   WITNESS
-nooptions   WITNESS_SKIPSPIN
-nooptions   DEBUG
-nooptions   KDB
-nooptions   DDB
-nooptions   GDB
-nooptions   ALT_BREAK_TO_DEBUGGER
-
-# ---- Boot ----
-options     ROOTDEVNAME=\"ufs:da0s2a\"
+# Boot
+options		ROOTDEVNAME=\"ufs:da0s2a\"
