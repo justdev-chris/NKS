@@ -1,6 +1,14 @@
 // src/panic/panic.c
 // NKS Kitty Panic
 
+// Force define BSD types before any includes
+#ifndef _SYS_TYPES_H_
+typedef unsigned char u_char;
+typedef unsigned int u_int;
+typedef unsigned short u_short;
+typedef unsigned long u_long;
+#endif
+
 #include "panic.h"
 #include "../display/fb.h"
 #include <stdio.h>
@@ -8,8 +16,7 @@
 #include <unistd.h>
 #include <time.h>
 
-// POSIX sleep wrapper
-static inline void psleep(unsigned int ms) {
+static inline void panic_sleep_ms(unsigned int ms) {
     struct timespec ts;
     ts.tv_sec = ms / 1000;
     ts.tv_nsec = (ms % 1000) * 1000000;
@@ -30,10 +37,8 @@ void kitty_panic(const char* msg) {
     int height = fb_get_height();
     int center_y = height / 2 - 40;
     
-    // Cat placeholder
     fb_draw_rect(width/2 - 20, center_y - 20, 40, 40, 0x07);
     
-    // Draw text
     draw_centered_text("=== KITTY PANIC ===", center_y + 10, 0x02);
     
     char error_line[128];
@@ -46,7 +51,7 @@ void kitty_panic(const char* msg) {
     fb_render();
     
     while (1) {
-        psleep(1000);  // Sleep 1s
+        panic_sleep_ms(1000);
     }
 }
 
@@ -55,6 +60,6 @@ void kitty_panic_simple(const char* msg) {
     fprintf(stderr, "%s\n", msg);
     fprintf(stderr, "Press reset to reboot.\n");
     while (1) {
-        psleep(1000);
+        panic_sleep_ms(1000);
     }
 }
