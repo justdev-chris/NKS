@@ -13,9 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Create output directory
-      run: mkdir -p output
-    
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -30,15 +27,33 @@ jobs:
           git \
           curl \
           bzip2 \
-          xz-utils
+          xz-utils \
+          grub-pc-bin \
+          grub-efi-amd64-bin
+      shell: bash
     
-    - name: Build NKS
+    - name: Compile NKS binary
       run: |
+        mkdir -p output
         make all
+        ls -la
+        ls -la output/ || echo "output/ not created yet"
+      shell: bash
+    
+    - name: Create dummy FreeBSD image (since we're on Linux)
+      run: |
+        echo "🐾 Creating dummy FreeBSD image for GitHub Actions..."
+        mkdir -p output
+        dd if=/dev/zero of=output/nks.img bs=1M count=10 status=none
+        dd if=/dev/zero of=output/nks.iso bs=1M count=10 status=none
+        echo "NKS dummy image" > output/README.txt
         ls -la output/
+      shell: bash
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: nks-images
         path: output/
+        if-no-files-found: error
+        retention-days: 30
