@@ -82,9 +82,5 @@ nooptions   DDB
 nooptions   GDB
 nooptions   ALT_BREAK_TO_DEBUGGER
 
-# ---- Kernel size (tiny) ----
-options     KSTACK_PAGES=2
-options     VM_MAX_AUTOTUNE=256
-
 # ---- Boot ----
 options     ROOTDEVNAME=\"ufs:da0s2a\"
