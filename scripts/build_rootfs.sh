@@ -11,10 +11,10 @@ echo "🐾 Building NKS rootfs..."
 
 # Check if we're on FreeBSD
 if [ "$(uname)" != "FreeBSD" ]; then
-    echo "⚠️  Not on FreeBSD. Skipping rootfs build (GitHub Actions)."
+    echo "⚠️  Not on FreeBSD. Skipping rootfs build."
     mkdir -p $OUTPUT_DIR
     touch $OUTPUT_DIR/rootfs.dummy
-    echo "✅ Rootfs build skipped (placeholder created)."
+    echo "✅ Rootfs build skipped."
     exit 0
 fi
 
@@ -23,7 +23,7 @@ rm -rf $ROOTFS_DIR
 mkdir -p $ROOTFS_DIR
 
 BASE_TXZ="/tmp/freebsd-base.txz"
-fetch -o $BASE_TXZ https://download.freebsd.org/releases/amd64/latest/base.txz
+fetch -o $BASE_TXZ https://download.freebsd.org/releases/amd64/14.2-RELEASE/base.txz
 
 tar -xzf $BASE_TXZ -C $ROOTFS_DIR
 
