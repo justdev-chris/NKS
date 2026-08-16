@@ -28,6 +28,7 @@ jobs:
     
     - name: Build NKS
       run: |
+        mkdir -p output
         make all
         ls -la output/
     
