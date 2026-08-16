@@ -1,36 +1,48 @@
-# Makefile for RISC-V Linux Emulator
-# "If it boots, it boots" - 2026
+# NKS Makefile
+# NyaaKitStation - RISC-V catboy console on FreeBSD
 
-CC = gcc
-CFLAGS = -Wall -Wextra -O2 -std=c99 -march=native
-LDFLAGS = -lm
+CC = cc
+CFLAGS = -Wall -Wextra -O2 -std=c99 -I.
+LDFLAGS = -lkvm -lutil -lpthread
 
-TARGET = riscv-emu
-SOURCES = emu.c cpu.c loader.c serial.c
-HEADERS = riscv.h
-OBJECTS = $(SOURCES:.c=.o)
+TARGET = nks
+SRCS = src/core/main.c \
+       src/cpu/cpu.c \
+       src/memory/mem.c \
+       src/display/fb.c \
+       src/audio/audio.c \
+       src/input/kbd.c \
+       src/panic/panic.c
+OBJS = $(SRCS:.c=.o)
+
+.PHONY: all clean install test
 
 all: $(TARGET)
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-%.o: %.c $(HEADERS)
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
-distclean: clean
-	rm -f *.bin *.elf vmlinux
+install: $(TARGET)
+	cp $(TARGET) /usr/local/bin/
 
-run: $(TARGET)
-	./$(TARGET)
+test: $(TARGET)
+	./$(TARGET) test.rom
 
-# Download a pre-built Linux kernel for RISC-V
-get-image:
-	wget -O Image https://storage.googleapis.com/riscv-emu/Image
-	wget -O opensbi.bin https://storage.googleapis.com/riscv-emu/opensbi.bin
-	wget -O initramfs.cpio.gz https://storage.googleapis.com/riscv-emu/initramfs.cpio.gz
+# FreeBSD-specific
+build-freebsd:
+	./scripts/build_freebsd.sh
 
-.PHONY: all clean distclean run get-image
+build-rootfs:
+	./scripts/build_rootfs.sh
+
+mkimage:
+	./scripts/mkimage.sh
+
+qemu:
+	./scripts/run_qemu.sh
