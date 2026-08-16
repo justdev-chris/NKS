@@ -1,6 +1,8 @@
 // src/core/main.c
 // NKS Entry Point
 
+#define _POSIX_C_SOURCE 199309L  // For clock_gettime, nanosleep
+
 #include "../cpu/cpu.h"
 #include "../memory/mem.h"
 #include "../display/fb.h"
@@ -18,7 +20,9 @@
 
 // POSIX sleep wrapper (works everywhere)
 static inline void msleep(unsigned int ms) {
-    struct timespec ts = { ms / 1000, (ms % 1000) * 1000000 };
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
     nanosleep(&ts, NULL);
 }
 
@@ -170,7 +174,9 @@ int main(int argc, char** argv) {
             long ns = (frame_end.tv_sec - frame_start.tv_sec) * 1000000000L +
                       (frame_end.tv_nsec - frame_start.tv_nsec);
             if (ns < 16666666L) {
-                struct timespec sleep_ts = {0, (16666666L - ns) * 1000};
+                struct timespec sleep_ts;
+                sleep_ts.tv_sec = 0;
+                sleep_ts.tv_nsec = (16666666L - ns) * 1000;
                 nanosleep(&sleep_ts, NULL);
             }
             clock_gettime(CLOCK_MONOTONIC, &frame_start);
