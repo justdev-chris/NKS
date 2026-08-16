@@ -1,11 +1,20 @@
 // src/display/fb.c
 // NKS Framebuffer
 
+#include <sys/types.h>   // MUST BE FIRST (defines u_char, u_int)
 #include "fb.h"
 #include "../panic/panic.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __FreeBSD__
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#include <sys/fbio.h>
+#include <unistd.h>
+#endif
 
 #define NKS_WIDTH  256
 #define NKS_HEIGHT 240
@@ -22,12 +31,6 @@ static int scale_factor = 1;
 static int fb_initialized = 0;
 
 #ifdef __FreeBSD__
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/ioctl.h>
-#include <sys/fbio.h>
-#include <unistd.h>
 static int fb_fd = -1;
 #endif
 
@@ -169,6 +172,7 @@ void fb_draw_text(const char* text, int x, int y, uint8_t color) {
 
 int fb_get_width(void) { return NKS_WIDTH; }
 int fb_get_height(void) { return NKS_HEIGHT; }
+
 void fb_set_palette_entry(int idx, uint8_t r, uint8_t g, uint8_t b) {
     if (idx >= 0 && idx < NKS_PALETTE_SIZE) {
         nks_palette[idx] = (0xFF << 24) | (r << 16) | (g << 8) | b;
