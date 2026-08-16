@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <time.h>
+#include <sys/time.h>  // For usleep alternative
 
 // ROM path (hardcoded for now)
 #define ROM_PATH "/boot/game.nks"
@@ -42,7 +43,7 @@ static int load_rom_file(const char* path) {
         return -1;
     }
     
-    if (st.st_size > sizeof(rom_buffer)) {
+    if (st.st_size > (off_t)sizeof(rom_buffer)) {
         close(fd);
         kitty_panic_simple("ROM too large! Max 64KB");
         return -1;
@@ -196,8 +197,8 @@ int main(int argc, char** argv) {
     
     // 11. Main emulation loop
     int frame_counter = 0;
-    struct timespec frame_start, frame_end;
-    clock_gettime(CLOCK_MONOTONIC, &frame_start);
+    struct timeval frame_start, frame_end;
+    gettimeofday(&frame_start, NULL);
     
     while (running && !cpu_is_halted()) {
         // Execute one instruction
@@ -213,13 +214,13 @@ int main(int argc, char** argv) {
             handle_input();
             
             // Frame timing (target 60 FPS)
-            clock_gettime(CLOCK_MONOTONIC, &frame_end);
-            long ns = (frame_end.tv_sec - frame_start.tv_sec) * 1000000000L +
-                      (frame_end.tv_nsec - frame_start.tv_nsec);
-            if (ns < 16666666L) {  // 16.67ms = 60 FPS
-                usleep((16666666L - ns) / 1000);
+            gettimeofday(&frame_end, NULL);
+            long us = (frame_end.tv_sec - frame_start.tv_sec) * 1000000L +
+                      (frame_end.tv_usec - frame_start.tv_usec);
+            if (us < 16666L) {  // 16.67ms = 60 FPS
+                usleep(16666L - us);
             }
-            clock_gettime(CLOCK_MONOTONIC, &frame_start);
+            gettimeofday(&frame_start, NULL);
         }
         
         // Check for audio events
