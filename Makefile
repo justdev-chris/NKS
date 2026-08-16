@@ -1,9 +1,14 @@
 # NKS Makefile
-# NyaaKitStation - RISC-V catboy console on FreeBSD
-
 CC = cc
-CFLAGS = -Wall -Wextra -O2 -std=c99 -I.
-LDFLAGS = -lkvm -lutil -lpthread
+CFLAGS = -Wall -Wextra -O2 -std=c99 -I. -D_POSIX_C_SOURCE=199309L
+
+# Detect OS
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),FreeBSD)
+    LDFLAGS = -lkvm -lutil -lpthread
+else
+    LDFLAGS = -lutil -lpthread
+endif
 
 TARGET = nks
 SRCS = src/core/main.c \
@@ -18,6 +23,7 @@ OBJS = $(SRCS:.c=.o)
 .PHONY: all clean install test
 
 all: $(TARGET)
+	ls -la output/ || true
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
