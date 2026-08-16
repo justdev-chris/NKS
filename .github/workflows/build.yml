@@ -24,6 +24,7 @@ jobs:
           echo "✅ FreeBSD environment ready"
         run: |
           cd $GITHUB_WORKSPACE
+          echo "🐾 Building NKS..."
           make all
           make image
           ls -la output/
