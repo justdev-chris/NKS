@@ -20,11 +20,10 @@ jobs:
         prepare: |
           env ASSUME_ALWAYS_YES=yes pkg bootstrap
           pkg update
-          pkg install -y git gcc make
+          pkg install -y git gcc
           echo "✅ FreeBSD environment ready"
         run: |
           cd $GITHUB_WORKSPACE
-          echo "🐾 Building NKS..."
           make all
           make image
           ls -la output/
