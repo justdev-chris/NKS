@@ -1,15 +1,12 @@
-# NKS Makefile - Works on Linux (GNU make) and FreeBSD (BSD make)
-# NyaaKitStation - Purrformance meets chaos.
-
+# NKS Makefile
 CC = cc
 CFLAGS = -Wall -Wextra -O2 -I. -D_POSIX_C_SOURCE=199309L
 
-# Detect OS (works on both GNU and BSD make)
 UNAME_S != uname -s 2>/dev/null || echo "Linux"
 .if $(UNAME_S) == "FreeBSD"
-LDFLAGS = -lkvm -lutil -lpthread
+LDFLAGS = -lkvm -lutil -lpthread -lm
 .else
-LDFLAGS = -lutil -lpthread
+LDFLAGS = -lutil -lpthread -lm
 .endif
 
 TARGET = nks
@@ -26,7 +23,6 @@ OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET) create-output
 	@echo "✅ NKS binary built!"
-	@echo "Run 'make image' to build the full bootable image."
 	@ls -la $(TARGET) || true
 
 create-output:
@@ -45,14 +41,12 @@ clean:
 install: $(TARGET)
 	cp $(TARGET) /usr/local/bin/
 
-# Full image build (FreeBSD + NKS)
 image: $(TARGET) create-output
 	@echo "🐾 Building full NKS image..."
 	@chmod +x scripts/*.sh
 	./scripts/build_freebsd.sh || true
 	./scripts/build_rootfs.sh || true
 	./scripts/mkimage.sh || true
-	@echo "✅ Image built! Check output/"
 	@ls -la output/ || true
 
 test: $(TARGET)
