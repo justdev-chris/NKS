@@ -22,6 +22,7 @@ static int scale_factor = 1;
 static int fb_initialized = 0;
 
 #ifdef __FreeBSD__
+#include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
