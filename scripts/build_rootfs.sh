@@ -23,7 +23,7 @@ rm -rf $ROOTFS_DIR
 mkdir -p $ROOTFS_DIR
 
 BASE_TXZ="/tmp/freebsd-base.txz"
-fetch -o $BASE_TXZ https://download.freebsd.org/releases/amd64/14.0-RELEASE/base.txz
+fetch -o $BASE_TXZ https://download.freebsd.org/releases/amd64/14.1-RELEASE/base.txz
 
 tar -xzf $BASE_TXZ -C $ROOTFS_DIR
 
