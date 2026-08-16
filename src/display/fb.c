@@ -1,7 +1,14 @@
 // src/display/fb.c
 // NKS Framebuffer
 
-#include <sys/types.h>   // MUST BE FIRST (defines u_char, u_int)
+// Force define BSD types before any includes
+#ifndef _SYS_TYPES_H_
+typedef unsigned char u_char;
+typedef unsigned int u_int;
+typedef unsigned short u_short;
+typedef unsigned long u_long;
+#endif
+
 #include "fb.h"
 #include "../panic/panic.h"
 #include <string.h>
