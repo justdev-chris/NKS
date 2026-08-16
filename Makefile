@@ -1,13 +1,16 @@
-# NKS Makefile
+# NKS Makefile - Works on Linux (GNU make) and FreeBSD (BSD make)
+# NyaaKitStation - Purrformance meets chaos.
+
 CC = cc
 CFLAGS = -Wall -Wextra -O2 -std=c99 -I. -D_POSIX_C_SOURCE=199309L
 
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),FreeBSD)
-    LDFLAGS = -lkvm -lutil -lpthread
-else
-    LDFLAGS = -lutil -lpthread
-endif
+# Detect OS (works on both GNU and BSD make)
+UNAME_S != uname -s 2>/dev/null || echo "Linux"
+.if $(UNAME_S) == "FreeBSD"
+LDFLAGS = -lkvm -lutil -lpthread
+.else
+LDFLAGS = -lutil -lpthread
+.endif
 
 TARGET = nks
 SRCS = src/core/main.c \
@@ -19,7 +22,7 @@ SRCS = src/core/main.c \
        src/panic/panic.c
 OBJS = $(SRCS:.c=.o)
 
-.PHONY: all clean install test build-freebsd build-rootfs mkimage qemu
+.PHONY: all clean install test image qemu create-output
 
 all: $(TARGET) create-output
 	@echo "✅ NKS binary built!"
@@ -32,7 +35,7 @@ create-output:
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-%.o: %.c
+.c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
