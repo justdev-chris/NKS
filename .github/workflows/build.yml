@@ -13,6 +13,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Create output directory
+      run: mkdir -p output
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -24,11 +27,13 @@ jobs:
           dosfstools \
           gcc \
           make \
-          git
+          git \
+          curl \
+          bzip2 \
+          xz-utils
     
     - name: Build NKS
       run: |
-        mkdir -p output
         make all
         ls -la output/
     
