@@ -1,0 +1,4 @@
+# NKS fstab - minimal root
+# /etc/fstab
+
+/dev/da0s2a / ufs rw 0 0
