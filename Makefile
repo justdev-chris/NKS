@@ -2,7 +2,7 @@
 # NyaaKitStation - Purrformance meets chaos.
 
 CC = cc
-CFLAGS = -Wall -Wextra -O2 -std=c99 -I. -D_POSIX_C_SOURCE=199309L
+CFLAGS = -Wall -Wextra -O2 -I. -D_POSIX_C_SOURCE=199309L
 
 # Detect OS (works on both GNU and BSD make)
 UNAME_S != uname -s 2>/dev/null || echo "Linux"
