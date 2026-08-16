@@ -12,19 +12,19 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Install dependencies
-      run: |
-        pkg install -y gmake cmake git curl pkgconf
     
     - name: Build in FreeBSD VM
       uses: vmactions/freebsd-vm@v1
       with:
         usesh: true
         prepare: |
+          env ASSUME_ALWAYS_YES=yes pkg bootstrap
+          pkg update
           pkg install -y git gcc make
+          echo "✅ FreeBSD environment ready"
         run: |
           cd $GITHUB_WORKSPACE
+          echo "🐾 Building NKS..."
           make all
           make image
           ls -la output/
