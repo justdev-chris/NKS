@@ -16,7 +16,6 @@ static uint8_t key_state[256];
 #include <dev/atkbdc/atkbdcreg.h>
 #endif
 
-// Key mapping (same for all platforms)
 static const uint8_t hid_to_nks[256] = {
     [0x04] = 'A', [0x05] = 'B', [0x06] = 'C', [0x07] = 'D',
     [0x08] = 'E', [0x09] = 'F', [0x0A] = 'G', [0x0B] = 'H',
@@ -39,17 +38,22 @@ static const uint8_t hid_to_nks[256] = {
 int kbd_init(void) {
     memset(key_state, 0, sizeof(key_state));
     
-    // Try /dev/input/by-path/*-kbd on Linux
-    kbd_fd = open("/dev/input/by-path/platform-i8042-serio-0-event-kbd", O_RDONLY);
+#ifdef __FreeBSD__
+    kbd_fd = open("/dev/uhid0", O_RDWR);
     if (kbd_fd < 0) {
-        // Try /dev/tty (fallback)
-        kbd_fd = open("/dev/tty", O_RDONLY);
+        kbd_fd = open("/dev/kbd0", O_RDWR);
         if (kbd_fd < 0) {
-            kitty_panic_simple("No keyboard found!");
-            return -1;
+            kbd_fd = open("/dev/kbdmux0", O_RDWR);
+            if (kbd_fd < 0) {
+                kitty_panic_simple("No keyboard found!");
+                return -1;
+            }
         }
     }
-    
+#else
+    // Linux/dummy
+    kbd_fd = -1;
+#endif
     return 0;
 }
 
@@ -61,26 +65,19 @@ void kbd_shutdown(void) {
 }
 
 void kbd_poll(void) {
+#ifdef __FreeBSD__
     if (kbd_fd < 0) return;
-    
-    // Simple: just check if we can read
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(kbd_fd, &fds);
-    struct timeval tv = {0, 0};
-    
-    if (select(kbd_fd + 1, &fds, NULL, NULL, &tv) > 0) {
-        unsigned char buf[64];
-        ssize_t bytes = read(kbd_fd, buf, sizeof(buf));
-        if (bytes > 0) {
-            // Simplified: mark all keys as pressed for testing
-            for (int i = 0; i < 256; i++) {
-                if (hid_to_nks[i]) {
-                    key_state[hid_to_nks[i]] = 1;
-                }
+    unsigned char buf[64];
+    ssize_t bytes = read(kbd_fd, buf, sizeof(buf));
+    if (bytes > 0) {
+        for (int i = 2; i < bytes && i < 8; i++) {
+            int key = buf[i];
+            if (key > 0 && key < 256 && hid_to_nks[key]) {
+                key_state[hid_to_nks[key]] = 1;
             }
         }
     }
+#endif
 }
 
 int kbd_is_pressed(uint8_t key) {
@@ -93,7 +90,19 @@ void kbd_clear_state(void) {
 }
 
 uint8_t kbd_wait_key(void) {
-    // Simple: wait 2 seconds and return space
-    sleep(2);
-    return ' ';
+    while (1) {
+        kbd_poll();
+        for (int i = 0; i < 256; i++) {
+            if (key_state[i]) {
+                uint8_t key = i;
+                kbd_clear_state();
+                return key;
+            }
+        }
+#ifdef __FreeBSD__
+        usleep(10000);
+#else
+        sleep(0.01);
+#endif
+    }
 }
