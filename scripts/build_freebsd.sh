@@ -22,7 +22,7 @@ rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 
-echo "Cloning FreeBSD 14.3 source..."
+echo "Cloning FreeBSD 14.3 source (shallow clone)..."
 git clone --depth 1 --branch releng/14.3 https://git.freebsd.org/src.git src
 
 if [ ! -f "$KERNEL_CONF" ]; then
