@@ -42,8 +42,6 @@ device      cd
 device      sound
 device      snd_hda
 device      snd_ich
-device      snd_es137x
-device      snd_sb16
 
 # ---- Networking (disable) ----
 nodevice    ether
@@ -60,7 +58,6 @@ nodevice    ral
 options     UFS_ACL
 options     UFS_DIRHASH
 options     UFS_GJOURNAL
-options     EXT2FS
 options     MSDOSFS
 options     CD9660
 options     PROCFS
@@ -88,7 +85,6 @@ nooptions   ALT_BREAK_TO_DEBUGGER
 # ---- Kernel size (tiny) ----
 options     KSTACK_PAGES=2
 options     VM_MAX_AUTOTUNE=256
-options     AUTOTUNE_MAXMEM=128
 
 # ---- Boot ----
 options     ROOTDEVNAME=\"ufs:da0s2a\"
