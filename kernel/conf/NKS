@@ -42,7 +42,11 @@ device      sound
 device      snd_hda
 device      snd_ich
 
-# ---- Networking (disable) ----
+# ---- Networking ----
+# Disable ALL networking (Ethernet, WiFi, etc.)
+nooptions   INET6
+nooptions   SCTP
+nooptions   IPSEC
 nodevice    ether
 nodevice    re
 nodevice    em
@@ -52,6 +56,9 @@ nodevice    wlan
 nodevice    wpi
 nodevice    iwn
 nodevice    ral
+nodevice    ath
+nodevice    ath_hal
+nodevice    ath_pci
 
 # ---- Filesystems ----
 options     UFS_ACL
@@ -63,10 +70,6 @@ options     PROCFS
 options     PSEUDOFS
 
 # ---- Misc (remove bloat) ----
-nooptions   INET6
-nooptions   SCTP
-nooptions   IPSEC
-nooptions   IPSEC_SUPPORT
 nooptions   TCP_OFFLOAD
 nooptions   USB_DEBUG
 
