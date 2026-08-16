@@ -13,7 +13,7 @@ static uint8_t key_state[256];
 
 #ifdef __FreeBSD__
 #include <sys/ioctl.h>
-#include <dev/atkbdc/atkbdcreg.h>
+// #include <dev/atkbdc/atkbdcreg.h>
 #endif
 
 static const uint8_t hid_to_nks[256] = {
