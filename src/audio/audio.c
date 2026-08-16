@@ -1,6 +1,14 @@
 // src/audio/audio.c
 // NKS Audio - OSS on FreeBSD, stubs elsewhere
 
+// Force define BSD types before any includes
+#ifndef _SYS_TYPES_H_
+typedef unsigned char u_char;
+typedef unsigned int u_int;
+typedef unsigned short u_short;
+typedef unsigned long u_long;
+#endif
+
 #include "audio.h"
 #include "../panic/panic.h"
 #include <fcntl.h>
@@ -72,6 +80,7 @@ void audio_play_sample(const uint8_t* sample, size_t size) {
     if (!audio_enabled || audio_fd < 0 || !sample || size == 0) return;
     write(audio_fd, sample, size);
 #endif
+    (void)sample; (void)size;
 }
 
 void audio_play_sine(int freq, int duration_ms) {
@@ -88,6 +97,7 @@ void audio_play_sine(int freq, int duration_ms) {
     write(audio_fd, buffer, samples);
     free(buffer);
 #endif
+    (void)freq; (void)duration_ms;
 }
 
 void audio_update(void) {
