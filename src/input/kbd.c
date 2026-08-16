@@ -1,20 +1,36 @@
 // src/input/kbd.c
 // NKS Keyboard Input
 
+// Force define BSD types before any includes
+#ifndef _SYS_TYPES_H_
+typedef unsigned char u_char;
+typedef unsigned int u_int;
+typedef unsigned short u_short;
+typedef unsigned long u_long;
+#endif
+
 #include "kbd.h"
 #include "../panic/panic.h"
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
+
+#ifdef __FreeBSD__
+#include <sys/ioctl.h>
+#endif
 
 static int kbd_fd = -1;
 static uint8_t key_state[256];
 
-#ifdef __FreeBSD__
-#include <sys/ioctl.h>
-// #include <dev/atkbdc/atkbdcreg.h>
-#endif
+// Sleep function (inline so it's visible)
+static inline void kbd_sleep_ms(unsigned int ms) {
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
+    nanosleep(&ts, NULL);
+}
 
 static const uint8_t hid_to_nks[256] = {
     [0x04] = 'A', [0x05] = 'B', [0x06] = 'C', [0x07] = 'D',
@@ -51,7 +67,6 @@ int kbd_init(void) {
         }
     }
 #else
-    // Linux/dummy
     kbd_fd = -1;
 #endif
     return 0;
@@ -81,7 +96,6 @@ void kbd_poll(void) {
 }
 
 int kbd_is_pressed(uint8_t key) {
-    if (key >= 256) return 0;
     return key_state[key];
 }
 
@@ -99,10 +113,6 @@ uint8_t kbd_wait_key(void) {
                 return key;
             }
         }
-#ifdef __FreeBSD__
-        psleep(10);;
-#else
-        sleep(0.01);
-#endif
+        kbd_sleep_ms(10);
     }
 }
