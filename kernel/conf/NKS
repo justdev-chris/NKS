@@ -18,7 +18,6 @@ device      isa
 # ---- Console & Framebuffer ----
 device      vt
 device      fb
-device      vgapci
 options     VESA
 options     SC_PIXEL_MODE
 
