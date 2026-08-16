@@ -100,7 +100,7 @@ uint8_t kbd_wait_key(void) {
             }
         }
 #ifdef __FreeBSD__
-        usleep(10000);
+        psleep(10);;
 #else
         sleep(0.01);
 #endif
