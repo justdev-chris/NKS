@@ -23,8 +23,15 @@ rm -rf $ROOTFS_DIR
 mkdir -p $ROOTFS_DIR
 
 BASE_TXZ="/tmp/freebsd-base.txz"
-fetch -o $BASE_TXZ https://download.freebsd.org/releases/amd64/14.2-RELEASE/base.txz
+echo "Fetching FreeBSD 14.3 base.txz..."
+fetch -o $BASE_TXZ https://download.freebsd.org/releases/amd64/14.3-RELEASE/base.txz
 
+if [ ! -f $BASE_TXZ ]; then
+    echo "❌ Failed to download base.txz"
+    exit 1
+fi
+
+echo "Extracting base.txz..."
 tar -xzf $BASE_TXZ -C $ROOTFS_DIR
 
 # Remove unnecessary files
