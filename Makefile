@@ -1,89 +1,57 @@
-# NKS Kernel Configuration
-# FreeBSD 14.x - Stripped for NyaaKitStation
+# NKS Makefile
+CC = cc
+CFLAGS = -Wall -Wextra -O2 -I. -D_POSIX_C_SOURCE=199309L
 
-include GENERIC
-ident NKS
+UNAME_S != uname -s 2>/dev/null || echo "Linux"
+.if $(UNAME_S) == "FreeBSD"
+LDFLAGS = -lkvm -lutil -lpthread -lm
+.else
+LDFLAGS = -lutil -lpthread -lm
+.endif
 
-# ---- CPU ----
-cpu HAMMER
+TARGET = nks
+SRCS = src/core/main.c \
+       src/cpu/cpu.c \
+       src/memory/mem.c \
+       src/display/fb.c \
+       src/audio/audio.c \
+       src/input/kbd.c \
+       src/panic/panic.c
+OBJS = $(SRCS:.c=.o)
 
-# ---- Platform ----
-machine amd64
+.PHONY: all clean install test image qemu create-output
 
-# ---- Bus ----
-device      acpi
-device      pci
-device      isa
+all: $(TARGET) create-output
+	@echo "✅ NKS binary built!"
+	@ls -la $(TARGET) || true
 
-# ---- Console & Framebuffer ----
-device      vt
-device      fb
-options     VESA
-options     SC_PIXEL_MODE
+create-output:
+	mkdir -p output
 
-# ---- USB (for keyboard & storage) ----
-device      usb
-device      xhci
-device      ehci
-device      ohci
-device      uhci
-device      uhid
-device      ukbd
-device      umass
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-# ---- Storage (to boot) ----
-device      ahci
-device      ata
-device      da
-device      cd
+.c.o:
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# ---- Audio ----
-device      sound
-device      snd_hda
-device      snd_ich
+clean:
+	rm -f $(OBJS) $(TARGET)
+	rm -rf output/
 
-# ---- NO NETWORKING ----
-nooptions   INET
-nooptions   INET6
-nooptions   SCTP
-nooptions   IPSEC
-nooptions   TCP_OFFLOAD
-nodevice    ether
-nodevice    re
-nodevice    em
-nodevice    ix
-nodevice    igb
-nodevice    igc          # <-- DISABLE Intel I225/I226
-nodevice    wlan
-nodevice    wpi
-nodevice    iwn
-nodevice    ral
-nodevice    ath
-nodevice    ath_hal
-nodevice    ath_pci
+install: $(TARGET)
+	cp $(TARGET) /usr/local/bin/
 
-# ---- Filesystems ----
-options     UFS_ACL
-options     UFS_DIRHASH
-options     UFS_GJOURNAL
-options     MSDOSFS
-options     CD9660
-options     PROCFS
-options     PSEUDOFS
+image: $(TARGET) create-output
+	@echo "🐾 Building full NKS image..."
+	@chmod +x scripts/*.sh
+	./scripts/build_freebsd.sh
+	./scripts/build_rootfs.sh
+	./scripts/mkimage.sh
+	@echo "✅ Image built! Check output/"
+	@ls -la output/ || true
 
-# ---- Misc (remove bloat) ----
-nooptions   USB_DEBUG
+test: $(TARGET)
+	./$(TARGET) test.rom
 
-# ---- Debugging (remove) ----
-nooptions   INVARIANTS
-nooptions   INVARIANT_SUPPORT
-nooptions   WITNESS
-nooptions   WITNESS_SKIPSPIN
-nooptions   DEBUG
-nooptions   KDB
-nooptions   DDB
-nooptions   GDB
-nooptions   ALT_BREAK_TO_DEBUGGER
-
-# ---- Boot ----
-options     ROOTDEVNAME=\"ufs:da0s2a\"
+qemu: image
+	./scripts/run_qemu.sh
