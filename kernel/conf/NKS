@@ -1,9 +1,6 @@
 #
 # NKS -- NyaaKitStation custom kernel
 #
-# $FreeBSD$
-#
-
 machine		amd64
 cpu		HAMMER
 ident		NKS
@@ -29,11 +26,13 @@ device		uhid
 device		ukbd
 device		umass
 
-# Storage
-device		ahci
-device		ata
+# Storage (CAM is required for da/cd)
+device		cam
 device		da
 device		cd
+device		pass
+device		ata
+device		ahci
 
 # Audio
 device		sound
