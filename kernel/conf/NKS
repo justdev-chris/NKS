@@ -43,13 +43,16 @@ device		sound
 device		snd_hda
 device		snd_ich
 
-# NO NETWORKING
-nooptions	INET
-nooptions	INET6
+# Networking stack (required even for minimal configs)
+device		ether
+device		lo
+device		bpf
+options		INET
+options		INET6
+
+# Disable specific network devices but keep the stack
 nooptions	SCTP
-nooptions	IPSEC
 nooptions	TCP_OFFLOAD
-nodevice	ether
 nodevice	re
 nodevice	em
 nodevice	ix
@@ -71,6 +74,9 @@ options		MSDOSFS
 options		CD9660
 options		PROCFS
 options		PSEUDOFS
+
+# Scheduler (required)
+options		SCHED_ULE
 
 # Misc
 nooptions	USB_DEBUG
