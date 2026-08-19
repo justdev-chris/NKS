@@ -26,13 +26,17 @@ device		uhid
 device		ukbd
 device		umass
 
-# Storage (CAM is required for da/cd)
-device		cam
+# CAM (Common Access Method) - required for SCSI/ATA
+device		scbus
 device		da
 device		cd
 device		pass
+device		ses
+
+# Storage
 device		ata
 device		ahci
+device		ada
 
 # Audio
 device		sound
