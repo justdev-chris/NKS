@@ -45,7 +45,7 @@ device		snd_ich
 
 # Networking stack (required even for minimal configs)
 device		ether
-device		lo
+device		lo0
 device		bpf
 options		INET
 options		INET6
