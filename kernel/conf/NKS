@@ -1,96 +1,97 @@
 #
 # NKS -- NyaaKitStation custom kernel
 #
-machine		amd64
-cpu		HAMMER
-ident		NKS
+machine     amd64
+cpu     HAMMER
+ident       NKS
 
 # Bus support
-device		acpi
-device		pci
-device		isa
+device      acpi
+device      pci
+device      isa
 
 # Console & Framebuffer
-device		vt
-device		fb
-options		VESA
-options		SC_PIXEL_MODE
+device      vt
+device      fb
+options     VESA
+options     SC_PIXEL_MODE
 
 # USB (keyboard & storage)
-device		usb
-device		xhci
-device		ehci
-device		ohci
-device		uhci
-device		uhid
-device		ukbd
-device		umass
+device      usb
+device      xhci
+device      ehci
+device      ohci
+device      uhci
+device      uhid
+device      ukbd
+device      umass
 
 # CAM (Common Access Method) - required for SCSI/ATA
-device		scbus
-device		da
-device		cd
-device		pass
-device		ses
+device      scbus
+device      da
+device      cd
+device      pass
+device      ses
 
 # Storage
-device		ata
-device		ahci
-device		ada
+device      ata
+device      ahci
+device      ada
 
 # Audio
-device		sound
-device		snd_hda
-device		snd_ich
+device      sound
+device      snd_hda
+device      snd_ich
 
 # Networking stack (required even for minimal configs)
-device		ether
-device		lo0
-device		bpf
-options		INET
-options		INET6
+device      ether
+device      loop
+device      if_loop
+device      bpf
+options     INET
+options     INET6
 
 # Disable specific network devices but keep the stack
-nooptions	SCTP
-nooptions	TCP_OFFLOAD
-nodevice	re
-nodevice	em
-nodevice	ix
-nodevice	igb
-nodevice	igc
-nodevice	wlan
-nodevice	wpi
-nodevice	iwn
-nodevice	ral
-nodevice	ath
-nodevice	ath_hal
-nodevice	ath_pci
+nooptions   SCTP
+nooptions   TCP_OFFLOAD
+nodevice    re
+nodevice    em
+nodevice    ix
+nodevice    igb
+nodevice    igc
+nodevice    wlan
+nodevice    wpi
+nodevice    iwn
+nodevice    ral
+nodevice    ath
+nodevice    ath_hal
+nodevice    ath_pci
 
 # Filesystems
-options		UFS_ACL
-options		UFS_DIRHASH
-options		UFS_GJOURNAL
-options		MSDOSFS
-options		CD9660
-options		PROCFS
-options		PSEUDOFS
+options     UFS_ACL
+options     UFS_DIRHASH
+options     UFS_GJOURNAL
+options     MSDOSFS
+options     CD9660
+options     PROCFS
+options     PSEUDOFS
 
 # Scheduler (required)
-options		SCHED_ULE
+options     SCHED_ULE
 
 # Misc
-nooptions	USB_DEBUG
+nooptions   USB_DEBUG
 
 # Debugging (remove for smaller kernel)
-nooptions	INVARIANTS
-nooptions	INVARIANT_SUPPORT
-nooptions	WITNESS
-nooptions	WITNESS_SKIPSPIN
-nooptions	DEBUG
-nooptions	KDB
-nooptions	DDB
-nooptions	GDB
-nooptions	ALT_BREAK_TO_DEBUGGER
+nooptions   INVARIANTS
+nooptions   INVARIANT_SUPPORT
+nooptions   WITNESS
+nooptions   WITNESS_SKIPSPIN
+nooptions   DEBUG
+nooptions   KDB
+nooptions   DDB
+nooptions   GDB
+nooptions   ALT_BREAK_TO_DEBUGGER
 
 # Boot
-options		ROOTDEVNAME=\"ufs:da0s2a\"
+options     ROOTDEVNAME="ufs:da0s2a"
