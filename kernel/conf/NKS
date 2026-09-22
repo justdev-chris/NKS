@@ -2,7 +2,7 @@
 # NKS -- NyaaKitStation custom kernel
 #
 machine     amd64
-cpu     HAMMER
+cpu         HAMMER
 ident       NKS
 
 # Bus support
@@ -37,6 +37,7 @@ device      ses
 device      ata
 device      ahci
 device      ada
+device      md
 
 # Audio
 device      sound
@@ -66,14 +67,19 @@ nodevice    ath
 nodevice    ath_hal
 nodevice    ath_pci
 
-# Filesystems
+# Filesystems -- FFS and UFS are REQUIRED for ROOTDEVNAME="ufs:..."
+options     FFS
+options     UFS
 options     UFS_ACL
 options     UFS_DIRHASH
 options     UFS_GJOURNAL
+options     SOFTUPDATES
+options     QUOTA
 options     MSDOSFS
 options     CD9660
 options     PROCFS
 options     PSEUDOFS
+options     TMPFS
 
 # Scheduler (required)
 options     SCHED_ULE
@@ -92,5 +98,5 @@ nooptions   DDB
 nooptions   GDB
 nooptions   ALT_BREAK_TO_DEBUGGER
 
-# Boot
-options     ROOTDEVNAME="ufs:da0s2a"
+# Boot -- GPT uses da0p2, not da0s2a
+options     ROOTDEVNAME=\"ufs:/dev/da0p2\"
