@@ -66,9 +66,8 @@ nodevice    ath
 nodevice    ath_hal
 nodevice    ath_pci
 
-# Filesystems
+# Filesystems  (FFS is the option name; "UFS" is not a config option)
 options     FFS
-options     UFS
 options     UFS_ACL
 options     UFS_DIRHASH
 options     UFS_GJOURNAL
@@ -95,5 +94,4 @@ nooptions   DDB
 nooptions   GDB
 nooptions   ALT_BREAK_TO_DEBUGGER
 
-# Boot: root is set by loader.conf via vfs.root.mountfrom
-# ROOTDEVNAME intentionally omitted to avoid quoting hell
+# Boot: root set by loader.conf
