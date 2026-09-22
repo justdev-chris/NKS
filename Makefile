@@ -2,12 +2,7 @@
 CC = cc
 CFLAGS = -Wall -Wextra -O2 -I. -D_POSIX_C_SOURCE=199309L
 
-UNAME_S != uname -s 2>/dev/null || echo "Linux"
-.if $(UNAME_S) == "FreeBSD"
 LDFLAGS = -lkvm -lutil -lpthread -lm
-.else
-LDFLAGS = -lutil -lpthread -lm
-.endif
 
 TARGET = nks
 SRCS = src/core/main.c \
@@ -44,9 +39,9 @@ install: $(TARGET)
 image: $(TARGET) create-output
 	@echo "🐾 Building full NKS image..."
 	@chmod +x scripts/*.sh
-	./scripts/build_freebsd.sh
-	./scripts/build_rootfs.sh
-	./scripts/mkimage.sh
+	sh scripts/build_freebsd.sh
+	sh scripts/build_rootfs.sh
+	sh scripts/mkimage.sh
 	@echo "✅ Image built! Check output/"
 	@ls -la output/ || true
 
@@ -54,4 +49,4 @@ test: $(TARGET)
 	./$(TARGET) test.rom
 
 qemu: image
-	./scripts/run_qemu.sh
+	sh scripts/run_qemu.sh
