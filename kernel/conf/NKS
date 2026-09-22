@@ -96,4 +96,3 @@ nooptions   DEBUG
 nooptions   KDB
 nooptions   DDB
 nooptions   GDB
-nooptions   ALT_BREAK_TO_DEBUGGER
