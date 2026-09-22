@@ -85,5 +85,3 @@ options     TMPFS
 
 # Scheduler
 options     SCHED_ULE
-
-nooptions   USB_DEBUG
