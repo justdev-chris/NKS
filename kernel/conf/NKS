@@ -44,14 +44,13 @@ device      sound
 device      snd_hda
 device      snd_ich
 
-# Networking stack (required even for minimal configs)
+# Networking stack
 device      ether
 device      loop
 device      bpf
 options     INET
 options     INET6
 
-# Disable specific network devices but keep the stack
 nooptions   SCTP
 nooptions   TCP_OFFLOAD
 nodevice    re
@@ -67,7 +66,7 @@ nodevice    ath
 nodevice    ath_hal
 nodevice    ath_pci
 
-# Filesystems -- FFS and UFS are REQUIRED for ROOTDEVNAME="ufs:..."
+# Filesystems
 options     FFS
 options     UFS
 options     UFS_ACL
@@ -81,13 +80,11 @@ options     PROCFS
 options     PSEUDOFS
 options     TMPFS
 
-# Scheduler (required)
+# Scheduler
 options     SCHED_ULE
 
-# Misc
 nooptions   USB_DEBUG
 
-# Debugging (remove for smaller kernel)
 nooptions   INVARIANTS
 nooptions   INVARIANT_SUPPORT
 nooptions   WITNESS
@@ -98,5 +95,5 @@ nooptions   DDB
 nooptions   GDB
 nooptions   ALT_BREAK_TO_DEBUGGER
 
-# Boot -- GPT uses da0p2, not da0s2a
-options     ROOTDEVNAME=\"ufs:/dev/da0p2\"
+# Boot -- no /dev/ prefix, config adds it
+options     ROOTDEVNAME=\"ufs:da0p2\"
