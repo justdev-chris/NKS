@@ -19,8 +19,8 @@ static rv32i_cpu cpu;
 
 // Helper: sign extend
 static inline uint32_t sign_extend(uint32_t val, int bits) {
-    if (val & (1 << (bits - 1)))
-        val |= (0xFFFFFFFF << bits);
+    if (val & (1u << (bits - 1)))
+        val |= (0xFFFFFFFFu << bits);
     return val;
 }
 
@@ -43,18 +43,22 @@ static void execute_insn(uint32_t insn) {
     uint32_t funct3 = (insn >> 12) & 0x7;
     uint32_t funct7 = (insn >> 25) & 0x7F;
     uint32_t imm;
+    uint32_t addr;
 
     switch (opcode) {
         // ----- R-Type -----
         case 0x33: // ADD, SUB, AND, OR, XOR, SLT, SLL, SRL, SRA
-            imm = 0;
             switch (funct3) {
                 case 0x0: // ADD / SUB
                     if (funct7 == 0x00)
                         cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2];
                     else if (funct7 == 0x20)
                         cpu.regs[rd] = cpu.regs[rs1] - cpu.regs[rs2];
-                    else goto invalid;
+                    else {
+                        kitty_panic("Invalid R-type funct7 for funct3=0");
+                        cpu.halted = 1;
+                        return;
+                    }
                     break;
                 case 0x1: // SLL
                     cpu.regs[rd] = cpu.regs[rs1] << (cpu.regs[rs2] & 0x1F);
@@ -73,7 +77,11 @@ static void execute_insn(uint32_t insn) {
                         cpu.regs[rd] = cpu.regs[rs1] >> (cpu.regs[rs2] & 0x1F);
                     else if (funct7 == 0x20)
                         cpu.regs[rd] = (int32_t)cpu.regs[rs1] >> (cpu.regs[rs2] & 0x1F);
-                    else goto invalid;
+                    else {
+                        kitty_panic("Invalid R-type funct7 for SRL/SRA");
+                        cpu.halted = 1;
+                        return;
+                    }
                     break;
                 case 0x6: // OR
                     cpu.regs[rd] = cpu.regs[rs1] | cpu.regs[rs2];
@@ -81,7 +89,10 @@ static void execute_insn(uint32_t insn) {
                 case 0x7: // AND
                     cpu.regs[rd] = cpu.regs[rs1] & cpu.regs[rs2];
                     break;
-                default: goto invalid;
+                default:
+                    kitty_panic("Invalid R-type funct3");
+                    cpu.halted = 1;
+                    return;
             }
             break;
 
@@ -109,7 +120,11 @@ static void execute_insn(uint32_t insn) {
                         cpu.regs[rd] = cpu.regs[rs1] >> (imm & 0x1F);
                     else if (funct7 == 0x20)
                         cpu.regs[rd] = (int32_t)cpu.regs[rs1] >> (imm & 0x1F);
-                    else goto invalid;
+                    else {
+                        kitty_panic("Invalid I-type funct7 for SRLI/SRAI");
+                        cpu.halted = 1;
+                        return;
+                    }
                     break;
                 case 0x6: // ORI
                     cpu.regs[rd] = cpu.regs[rs1] | imm;
@@ -117,13 +132,16 @@ static void execute_insn(uint32_t insn) {
                 case 0x7: // ANDI
                     cpu.regs[rd] = cpu.regs[rs1] & imm;
                     break;
-                default: goto invalid;
+                default:
+                    kitty_panic("Invalid I-type funct3");
+                    cpu.halted = 1;
+                    return;
             }
             break;
 
         case 0x03: // LB, LH, LW, LBU, LHU
             imm = sign_extend((insn >> 20) & 0xFFF, 12);
-            uint32_t addr = cpu.regs[rs1] + imm;
+            addr = cpu.regs[rs1] + imm;
             switch (funct3) {
                 case 0x0: // LB
                     cpu.regs[rd] = sign_extend(mem_read_byte(addr), 8);
@@ -140,15 +158,20 @@ static void execute_insn(uint32_t insn) {
                 case 0x5: // LHU
                     cpu.regs[rd] = mem_read_half(addr);
                     break;
-                default: goto invalid;
+                default:
+                    kitty_panic("Invalid load funct3");
+                    cpu.halted = 1;
+                    return;
             }
             break;
 
         case 0x67: // JALR
             imm = sign_extend((insn >> 20) & 0xFFF, 12);
-            uint32_t target = (cpu.regs[rs1] + imm) & ~1;
-            cpu.regs[rd] = cpu.pc;
-            cpu.pc = target;
+            {
+                uint32_t target = (cpu.regs[rs1] + imm) & ~1u;
+                cpu.regs[rd] = cpu.pc;
+                cpu.pc = target;
+            }
             break;
 
         // ----- S-Type -----
@@ -167,16 +190,21 @@ static void execute_insn(uint32_t insn) {
                 case 0x2: // SW
                     mem_write_word(addr, cpu.regs[rs2]);
                     break;
-                default: goto invalid;
+                default:
+                    kitty_panic("Invalid store funct3");
+                    cpu.halted = 1;
+                    return;
             }
             break;
 
         // ----- B-Type -----
-        case 0x63:
-            imm = (insn >> 7) & 0x1E;
-            imm |= ((insn >> 25) & 0x7F) << 5;
-            imm |= ((insn >> 8) & 0xF) << 1;  // Fix: correct B-type bit extraction
-            imm = sign_extend(imm, 12);
+        case 0x63: {
+            imm  = ((insn >> 31) & 0x1) << 12;  // imm[12]
+            imm |= ((insn >> 7)  & 0x1) << 11;  // imm[11]
+            imm |= ((insn >> 25) & 0x3F) << 5;  // imm[10:5]
+            imm |= ((insn >> 8)  & 0xF) << 1;   // imm[4:1]
+            imm = sign_extend(imm, 13);
+
             int branch = 0;
             switch (funct3) {
                 case 0x0: // BEQ
@@ -197,10 +225,14 @@ static void execute_insn(uint32_t insn) {
                 case 0x7: // BGEU
                     branch = (cpu.regs[rs1] >= cpu.regs[rs2]);
                     break;
-                default: goto invalid;
+                default:
+                    kitty_panic("Invalid branch funct3");
+                    cpu.halted = 1;
+                    return;
             }
             if (branch) cpu.pc += imm;
             break;
+        }
 
         // ----- U-Type -----
         case 0x37: // LUI
@@ -214,32 +246,33 @@ static void execute_insn(uint32_t insn) {
             break;
 
         // ----- J-Type -----
-        case 0x6F: // JAL
-            imm = (insn >> 21) & 0x3FF;
-            imm |= ((insn >> 20) & 0x1) << 10;
-            imm |= ((insn >> 12) & 0xFF) << 11;
-            imm |= ((insn >> 31) & 0x1) << 20;
-            imm = sign_extend(imm, 20);
+        case 0x6F: { // JAL
+            imm  = ((insn >> 31) & 0x1) << 20;   // imm[20]
+            imm |= ((insn >> 12) & 0xFF) << 12;  // imm[19:12]
+            imm |= ((insn >> 20) & 0x1) << 11;   // imm[11]
+            imm |= ((insn >> 21) & 0x3FF) << 1;  // imm[10:1]
+            imm = sign_extend(imm, 21);
             cpu.regs[rd] = cpu.pc;
             cpu.pc += imm;
             break;
+        }
 
         // ----- System (ECALL/EBREAK) -----
         case 0x73:
             if (funct3 == 0x0) {
-                // EBREAK or ECALL
                 kitty_panic("RISC-V ECALL/EBREAK - System call triggered!");
                 cpu.halted = 1;
             }
             break;
 
-        default:
-            invalid:
+        default: {
             char msg[128];
-            snprintf(msg, sizeof(msg), "Invalid opcode: 0x%08X at PC=0x%08X", insn, cpu.pc - 4);
+            snprintf(msg, sizeof(msg),
+                     "Invalid opcode: 0x%08X at PC=0x%08X", insn, cpu.pc - 4);
             kitty_panic(msg);
             cpu.halted = 1;
             break;
+        }
     }
 }
 
@@ -257,10 +290,8 @@ void cpu_reset(void) {
 }
 
 void cpu_load_rom(const uint8_t* rom, size_t size) {
-    // Load ROM at 0x00010000 (standard RISC-V)
-    for (size_t i = 0; i < size && i < 0x10000; i++) {
-        mem_write_byte(0x00010000 + i, rom[i]);
-    }
+    // ROM is owned by the memory subsystem; delegate.
+    mem_load_rom(rom, size);
 }
 
 void cpu_step(void) {
