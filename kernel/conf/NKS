@@ -82,6 +82,3 @@ options     CD9660
 options     PROCFS
 options     PSEUDOFS
 options     TMPFS
-
-# Scheduler
-options     SCHED_ULE
