@@ -16,6 +16,10 @@ device      fb
 options     VESA
 options     SC_PIXEL_MODE
 
+# HID (needed by uhid, ukbd)
+device      hid
+device      hidbus
+
 # USB (keyboard & storage)
 device      usb
 device      xhci
@@ -66,7 +70,7 @@ nodevice    ath
 nodevice    ath_hal
 nodevice    ath_pci
 
-# Filesystems  (FFS is the option name; "UFS" is not a config option)
+# Filesystems
 options     FFS
 options     UFS_ACL
 options     UFS_DIRHASH
@@ -93,5 +97,3 @@ nooptions   KDB
 nooptions   DDB
 nooptions   GDB
 nooptions   ALT_BREAK_TO_DEBUGGER
-
-# Boot: root set by loader.conf
