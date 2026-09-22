@@ -87,12 +87,3 @@ options     TMPFS
 options     SCHED_ULE
 
 nooptions   USB_DEBUG
-
-nooptions   INVARIANTS
-nooptions   INVARIANT_SUPPORT
-nooptions   WITNESS
-nooptions   WITNESS_SKIPSPIN
-nooptions   DEBUG
-nooptions   KDB
-nooptions   DDB
-nooptions   GDB
