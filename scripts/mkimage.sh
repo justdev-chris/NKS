@@ -25,7 +25,7 @@ fi
 # REAL FREEBSD IMAGE BUILD
 # ============================================================
 
-KERNEL_DIR="$OUTPUT_DIR/boot"
+KERNEL_DIR="$OUTPUT_DIR/boot/kernel"
 IMG_FILE="$OUTPUT_DIR/nks.img"
 ISO_FILE="$OUTPUT_DIR/nks.iso"
 
