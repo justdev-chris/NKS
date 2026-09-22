@@ -5,4 +5,4 @@
 # Start from FreeBSD's known-good amd64 GENERIC configuration.
 include "GENERIC"
 
-ident NKS
+ident "NKS"
