@@ -1,84 +1,8 @@
 #
 # NKS -- NyaaKitStation custom kernel
 #
-machine     amd64
-cpu         HAMMER
-ident       NKS
 
-# Bus support
-device      acpi
-device      pci
-device      isa
+# Start from FreeBSD's known-good amd64 GENERIC configuration.
+include GENERIC
 
-# Console & Framebuffer
-device      vt
-device      fb
-options     VESA
-options     SC_PIXEL_MODE
-
-# HID (needed by uhid, ukbd)
-device      hid
-device      hidbus
-
-# USB (keyboard & storage)
-device      usb
-device      xhci
-device      ehci
-device      ohci
-device      uhci
-device      uhid
-device      ukbd
-device      umass
-
-# CAM (Common Access Method)
-device      scbus
-device      da
-device      cd
-device      pass
-device      ses
-
-# Storage
-device      ata
-device      ahci
-device      ada
-device      md
-
-# Audio
-device      sound
-device      snd_hda
-device      snd_ich
-
-# Networking stack
-device      ether
-device      loop
-device      bpf
-options     INET
-options     INET6
-
-nooptions   SCTP
-nooptions   TCP_OFFLOAD
-nodevice    re
-nodevice    em
-nodevice    ix
-nodevice    igb
-nodevice    igc
-nodevice    wlan
-nodevice    wpi
-nodevice    iwn
-nodevice    ral
-nodevice    ath
-nodevice    ath_hal
-nodevice    ath_pci
-
-# Filesystems
-options     FFS
-options     UFS_ACL
-options     UFS_DIRHASH
-options     UFS_GJOURNAL
-options     SOFTUPDATES
-options     QUOTA
-options     MSDOSFS
-options     CD9660
-options     PROCFS
-options     PSEUDOFS
-options     TMPFS
+ident NKS
