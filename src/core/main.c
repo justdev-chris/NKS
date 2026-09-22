@@ -28,6 +28,7 @@ static inline void msleep(unsigned int ms) {
 
 #define ROM_PATH "/boot/game.nks"
 static uint8_t rom_buffer[64 * 1024];
+static size_t rom_size = 0;
 static volatile int running = 1;
 
 static void signal_handler(int sig) {
@@ -41,34 +42,35 @@ static int load_rom_file(const char* path) {
         kitty_panic_simple("No ROM found! Insert game.nks");
         return -1;
     }
-    
+
     struct stat st;
     if (fstat(fd, &st) < 0) {
         close(fd);
         kitty_panic_simple("Failed to stat ROM");
         return -1;
     }
-    
+
     if (st.st_size > (off_t)sizeof(rom_buffer)) {
         close(fd);
         kitty_panic_simple("ROM too large! Max 64KB");
         return -1;
     }
-    
+
     ssize_t bytes = read(fd, rom_buffer, st.st_size);
     close(fd);
-    
+
     if (bytes != st.st_size) {
         kitty_panic_simple("Failed to read ROM");
         return -1;
     }
-    
+
+    rom_size = (size_t)st.st_size;
     return 0;
 }
 
 static void draw_boot_logo(void) {
     fb_clear(0x04);
-    
+
     const char* logo[] = {
         "/$$   /$$ /$$   /$$  /$$$$$$ ",
         "| $$$ | $$| $$  /$$/ /$$__  $$",
@@ -84,11 +86,11 @@ static void draw_boot_logo(void) {
         "",
         "  Press any key to boot..."
     };
-    
+
     int width = fb_get_width();
     int center_x = (width - 40 * 8) / 2;
     if (center_x < 0) center_x = 0;
-    
+
     for (int i = 0; i < 13; i++) {
         if (i < 8) {
             fb_draw_text(logo[i], center_x, 10 + i * 14, 0x05);
@@ -98,7 +100,7 @@ static void draw_boot_logo(void) {
             fb_draw_text(logo[i], center_x, 10 + i * 14, 0x06);
         }
     }
-    
+
     fb_render();
 }
 
@@ -111,7 +113,7 @@ static void draw_rom_error(void) {
 
 static void handle_input(void) {
     kbd_poll();
-    
+
     if (kbd_is_pressed('Q') || kbd_is_pressed('q')) {
         msleep(100);
         if (kbd_is_pressed('Q') || kbd_is_pressed('q')) {
@@ -121,74 +123,71 @@ static void handle_input(void) {
 }
 
 int main(int argc, char** argv) {
-    (void)argc; (void)argv;
-    
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
-    
+
     if (fb_init() < 0) {
         kitty_panic_simple("Framebuffer init failed");
         return 1;
     }
-    
+
     mem_init();
     kbd_init();
     audio_init();
-    
+
     draw_boot_logo();
     kbd_wait_key();
-    
+
     const char* rom_path = (argc > 1) ? argv[1] : ROM_PATH;
     if (load_rom_file(rom_path) < 0) {
         draw_rom_error();
         kbd_wait_key();
         kitty_panic("Insert ROM and reset");
     }
-    
-    if (mem_load_rom(rom_buffer, sizeof(rom_buffer)) < 0) {
+
+    if (mem_load_rom(rom_buffer, rom_size) < 0) {
         kitty_panic("Failed to load ROM into memory");
     }
-    
+
     cpu_init();
-    cpu_load_rom(rom_buffer, sizeof(rom_buffer));
-    
+
     fb_clear(0x00);
     fb_draw_text("NKS Ready", 10, 10, 0x01);
     fb_render();
     msleep(200);
-    
+
     int frame_counter = 0;
     struct timespec frame_start, frame_end;
     clock_gettime(CLOCK_MONOTONIC, &frame_start);
-    
+
     while (running && !cpu_is_halted()) {
         cpu_step();
-        
+
         frame_counter++;
         if (frame_counter >= 5000) {
             fb_render();
             frame_counter = 0;
             handle_input();
-            
+
             clock_gettime(CLOCK_MONOTONIC, &frame_end);
             long ns = (frame_end.tv_sec - frame_start.tv_sec) * 1000000000L +
                       (frame_end.tv_nsec - frame_start.tv_nsec);
             if (ns < 16666666L) {
                 struct timespec sleep_ts;
                 sleep_ts.tv_sec = 0;
-                sleep_ts.tv_nsec = (16666666L - ns) * 1000;
+                sleep_ts.tv_nsec = (16666666L - ns);
                 nanosleep(&sleep_ts, NULL);
             }
             clock_gettime(CLOCK_MONOTONIC, &frame_start);
         }
-        
+
         audio_update();
     }
-    
+
     audio_shutdown();
     kbd_shutdown();
     fb_shutdown();
-    
+
     printf("\n🐾 NKS shutdown complete. Nya~!\n");
     return 0;
 }
