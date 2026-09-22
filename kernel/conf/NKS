@@ -26,7 +26,7 @@ device      uhid
 device      ukbd
 device      umass
 
-# CAM (Common Access Method) - required for SCSI/ATA
+# CAM (Common Access Method)
 device      scbus
 device      da
 device      cd
@@ -95,5 +95,5 @@ nooptions   DDB
 nooptions   GDB
 nooptions   ALT_BREAK_TO_DEBUGGER
 
-# Boot -- no /dev/ prefix, config adds it
-options     ROOTDEVNAME=\"ufs:da0p2\"
+# Boot: root is set by loader.conf via vfs.root.mountfrom
+# ROOTDEVNAME intentionally omitted to avoid quoting hell
